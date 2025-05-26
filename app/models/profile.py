@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, ForeignKey, Date, TIMESTAMP
+from sqlalchemy import Column, String, Integer, Text, ForeignKey, Date, TIMESTAMP, func
 from app.core.database import Base
 from sqlalchemy.orm import relationship
 
@@ -8,14 +8,12 @@ class Profile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(255), unique=True, nullable=False)
-    full_name = Column(String(255))
-    bio = Column(Text)
+    bio = Column(Text, nullable=True)
     avatar = Column(String(255), nullable=True)
     birthdate = Column(Date, nullable=True)
-    gender = Column(String(8))
     fcm_token = Column(String(255), nullable=True)
     user_uuid = Column(ForeignKey("user.uuid"), nullable=False)
-    created_at = Column(TIMESTAMP, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
 
     user = relationship("User", backref="profile", uselist=False)
-    posts = relationship("Post", back_populates="author", cascade="all, delete-orphan")
+    articles = relationship("Article", back_populates="profile", cascade="all, delete-orphan")

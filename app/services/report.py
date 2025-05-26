@@ -1,13 +1,13 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.report import Report
-from app.models.post import Post
+from app.models.article import Article
 from app.schemas.report import ReportCreate
 from fastapi import HTTPException, status
 
 
 async def create_report(db: AsyncSession, report_in: ReportCreate) -> Report:
-    post_result = await db.execute(select(Post).where(Post.id == report_in.post_id))
+    post_result = await db.execute(select(Article).where(Article.id == report_in.post_id))
     post = post_result.scalar_one_or_none()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")

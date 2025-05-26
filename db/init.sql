@@ -9,33 +9,40 @@ CREATE TABLE "user" (
 
 CREATE TABLE profile (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    full_name VARCHAR(255),
-    bio TEXT,
+    username VARCHAR(255) NOT NULL,
+    bio TEXT NULL,
     avatar VARCHAR(255) NULL,
-    birthdate DATE,
-    gender VARCHAR(8) CHECK (gender IN ('Female', 'Male'),
-    fcm_token VARCHAR(255),
-    user_uuid UUID NOT NULL REFERENCES "user"(uuid),
-    created_at TIMESTAMP NOT NULL
+    birthdate DATE NULL,
+    fcm_token VARCHAR(255) NULL,
+    user_uuid UUID NOT NULL REFERENCES "user"(uuid) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
-CREATE TABLE posts (
+CREATE TABLE collections (
     id SERIAL PRIMARY KEY,
-    author_id INTEGER NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
-    title VARCHAR(255),
-    content TEXT,
-    visibility_type VARCHAR(20) DEFAULT 'Private' CHECK (visibility_type IN ('Private', 'Public', 'Followers Only')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_published BOOLEAN DEFAULT FALSE
+    name VARCHAR(255) NOT NULL,
+    number_of_articles INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    profile_id INTEGER NOT NULL,
+    FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE post_media (
+CREATE TABLE articles (
     id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
-    file_path VARCHAR(255),
-    "order" INTEGER
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    photo VARCHAR(255),
+    read_time_seconds INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    profile_id INTEGER NOT NULL,
+    is_published BOOLEAN NOT NULL DEFAULT FALSE,
+    FOREIGN KEY (profile_id) REFERENCES profile(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE collection_articles(
+    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+    collection_id INTEGER NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+    PRIMARY KEY (article_id, collection_id)
 );
 
 CREATE TABLE category (
@@ -43,15 +50,15 @@ CREATE TABLE category (
     name VARCHAR(255) UNIQUE
 );
 
-CREATE TABLE post_categories (
-    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+CREATE TABLE articles_categories (
+    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     category_id INTEGER NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-    PRIMARY KEY (post_id, category_id)
+    PRIMARY KEY (article_id, category_id)
 );
 
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     author_id INTEGER NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
     parent_comment_id INTEGER REFERENCES comments(id) ON DELETE SET NULL,
     content TEXT NOT NULL,
@@ -67,13 +74,13 @@ CREATE TABLE follows (
 
 CREATE TABLE likes (
     author_id INTEGER NOT NULL REFERENCES profile(id) ON DELETE CASCADE,
-    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (author_id, post_id)
+    PRIMARY KEY (author_id, article_id)
 );
 
 CREATE TABLE report (
     id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    article_id INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

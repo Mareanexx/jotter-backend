@@ -1,7 +1,9 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr, constr
 from uuid import UUID
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, date
 
 
 class UserRole(str, Enum):
@@ -23,13 +25,10 @@ class UserBase(BaseModel):
 
 
 class UserCreate(BaseModel):
+    username: constr(min_length=3)
     email: EmailStr
     password: constr(min_length=6)
-
-
-class UserOut(BaseModel):
-    uuid: UUID
-    created_at: datetime
+    birthdate: Optional[date] = None
 
 
 class UserLogin(BaseModel):
@@ -37,6 +36,7 @@ class UserLogin(BaseModel):
     password: str
 
 
-class TokenOut(BaseModel):
+class AuthResponse(BaseModel):
+    profile_id: int
+    user_uuid: UUID
     access_token: str
-    user_uuid: str

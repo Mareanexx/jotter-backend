@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from typing import Optional
 from datetime import date, datetime
@@ -6,11 +6,8 @@ from datetime import date, datetime
 
 class ProfileBase(BaseModel):
     username: str
-    full_name: Optional[str] = None
     bio: Optional[str] = None
     birthdate: Optional[date] = None
-    gender: Optional[str] = None
-    fcm_token: Optional[str] = None
 
 
 class ProfileCreate(ProfileBase):
@@ -19,6 +16,15 @@ class ProfileCreate(ProfileBase):
 
 class ProfileOut(ProfileBase):
     id: int
-    avatar: str
+    email: EmailStr
+    avatar: Optional[str]
     user_uuid: UUID
     created_at: datetime
+
+
+class UpdateProfileRequest(BaseModel):
+    id: int
+    bio: Optional[str] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    birthdate: Optional[date] = None
